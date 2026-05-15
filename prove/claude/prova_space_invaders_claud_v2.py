@@ -2,7 +2,6 @@ import pygame
 import random
 import sys
 
-# ── Costanti globali ─────────────────────────────────────────────────────────
 LARGHEZZA_SCHERMO  = 800
 ALTEZZA_SCHERMO    = 600
 FPS                = 60
@@ -16,7 +15,6 @@ GIALLO    = (255, 255, 0)
 ARANCIONE = (255, 165, 0)
 VIOLA     = (180, 0,   255)
 
-# Griglia alieni
 COLONNE_ALIENI   = 11
 RIGHE_ALIENI     = 5
 SPAZIO_X_ALIENI  = 60
@@ -24,21 +22,18 @@ SPAZIO_Y_ALIENI  = 50
 INIZIO_X_ALIENI  = 80
 INIZIO_Y_ALIENI  = 80
 
-# Barriere
 NUMERO_BARRIERE    = 4
 LARGHEZZA_BARRIERA = 70
 ALTEZZA_BARRIERA   = 50
 DIMENSIONE_BLOCCO  = 7       # pixel per singolo blocchetto
 Y_BARRIERA         = ALTEZZA_SCHERMO - 130
 
-# Velocità
 VELOCITA_GIOCATORE         = 5
 VELOCITA_PROIETTILE        = 8
 VELOCITA_PROIETTILE_ALIENO = 4
 DISCESA_ALIENI             = 18
 VELOCITA_BASE_ALIENI       = 0.8  # pixel per frame con formazione completa
 
-# UFO
 VELOCITA_UFO   = 2
 Y_UFO          = 40
 INTERVALLO_UFO = (15, 30)    # secondi fra un'apparizione e l'altra
