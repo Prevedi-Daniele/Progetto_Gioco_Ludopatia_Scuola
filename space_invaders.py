@@ -25,18 +25,17 @@ POSIZIONE_INIZIALE_Y_ALIENI = 80
 NUMERO_BARRIERE = 4
 LARGHEZZA_BARRIERA = 70
 ALTEZZA_BARRIERA = 50
-DIMENSIONE_BLOCCO_BARRIERA = 7  # pixel per singolo blocchetto
+DIMENSIONE_BLOCCO_BARRIERA = 7
 POSIZIONE_Y_BARRIERE = ALTEZZA_SCHERMO - 130
 
 VELOCITA_GIOCATORE = 5
 VELOCITA_PROIETTILE_GIOCATORE = 8
 VELOCITA_PROIETTILE_ALIENO = 4
-PIXEL_DISCESA_ALIENI = 8  # ridotta per controbilanciare le semplificazioni
+PIXEL_DISCESA_ALIENI = 8
 VELOCITA_BASE_ALIENI = 0.8
 
 CARTELLA_SPRITE = os.path.join(os.path.dirname(__file__), "assets", "sprites")
 
-# Configurazione degli alieni: per ogni riga, nome sprite, dimensioni e punti
 CONFIGURAZIONE_TIPI_ALIENI = {
     0: {"sprite": "alieno_polpo_a.png", "larghezza": 44, "altezza": 32, "punti": 30},
     1: {"sprite": "alieno_granchio_a.png", "larghezza": 40, "altezza": 32, "punti": 20},
@@ -49,7 +48,7 @@ CONFIGURAZIONE_TIPI_ALIENI = {
 def carica_sprite(nome_file, larghezza=None, altezza=None):
     percorso_completo = os.path.join(CARTELLA_SPRITE, nome_file)
     immagine = pygame.image.load(percorso_completo).convert_alpha()
-    if (larghezza == None) == False and (altezza == None) == False:
+    if larghezza is not None and altezza is not None:
         immagine = pygame.transform.scale(immagine, (larghezza, altezza))
     return immagine
 
@@ -107,7 +106,6 @@ class Alieno(pygame.sprite.Sprite):
             altezza=configurazione["altezza"]
         )
         self.rect = self.image.get_rect()
-        self.indice_riga = indice_riga
         self.indice_colonna = indice_colonna
         self.punti = configurazione["punti"]
 
@@ -118,13 +116,11 @@ class Alieno(pygame.sprite.Sprite):
 class BloccoBarriera(pygame.sprite.Sprite):
     def __init__(self, posizione_x, posizione_y):
         super().__init__()
-        # La barriera non ha vita: viene distrutta al primo colpo
         self.image = pygame.Surface((DIMENSIONE_BLOCCO_BARRIERA, DIMENSIONE_BLOCCO_BARRIERA))
         self.image.fill(ARANCIONE)
         self.rect = self.image.get_rect(topleft=[posizione_x, posizione_y])
 
     def subisce_colpo(self):
-        # Un colpo rimuove direttamente il blocco, senza livelli di salute
         self.kill()
 
 
@@ -149,12 +145,10 @@ class Gioco:
         self.orologio = pygame.time.Clock()
         self.carattere_grande = pygame.font.SysFont("monospace", 36, bold=True)
         self.carattere_piccolo = pygame.font.SysFont("monospace", 20)
-        self.stato_gioco = "menu"  # stati possibili: menu | gioco | gameover
+        self.stato_gioco = "menu"  # stati possibili: menu | gioco | gameover | vittoria
         self._inizializza_partita()
 
     def _inizializza_partita(self):
-        self.numero_ondata = 1
-
         self.gruppo_tutti_sprite = pygame.sprite.Group()
         self.gruppo_alieni = pygame.sprite.Group()
         self.gruppo_barriere = pygame.sprite.Group()
@@ -168,12 +162,12 @@ class Gioco:
         self._genera_alieni()
         self._genera_barriere()
 
-        self.direzione_movimento_alieni = 1  # +1 = destra, -1 = sinistra
+        self.direzione_movimento_alieni = 1
         self.timer_movimento_alieni = 0
-        self.frame_tra_ogni_movimento = 40  # frame tra uno step e il successivo
+        self.frame_tra_ogni_movimento = 40
 
         self.timer_sparo_alieni = 0
-        self.frame_tra_ogni_sparo_alieno = FPS * 1  # circa 1 sparo al secondo
+        self.frame_tra_ogni_sparo_alieno = FPS * 1
 
     def _genera_alieni(self):
         indice_riga = 0
@@ -182,8 +176,7 @@ class Gioco:
             while indice_colonna < NUMERO_COLONNE_ALIENI:
                 alieno = Alieno(indice_riga, indice_colonna)
                 posizione_x = POSIZIONE_INIZIALE_X_ALIENI + indice_colonna * SPAZIO_ORIZZONTALE_ALIENI
-                posizione_y = POSIZIONE_INIZIALE_Y_ALIENI + indice_riga * SPAZIO_VERTICALE_ALIENI + (self.numero_ondata - 1) * 10
-                posizione_y = max(posizione_y, POSIZIONE_INIZIALE_Y_ALIENI)
+                posizione_y = POSIZIONE_INIZIALE_Y_ALIENI + indice_riga * SPAZIO_VERTICALE_ALIENI
                 alieno.posiziona(posizione_x, posizione_y)
                 self.gruppo_alieni.add(alieno)
                 self.gruppo_tutti_sprite.add(alieno)
@@ -201,7 +194,6 @@ class Gioco:
             while indice_riga_blocco < numero_righe_blocchi:
                 indice_colonna_blocco = 0
                 while indice_colonna_blocco < numero_colonne_blocchi:
-                    # Taglia gli angoli superiori per dare una forma ad arco
                     angolo_superiore = indice_riga_blocco == 0 and (indice_colonna_blocco < 2 or indice_colonna_blocco >= numero_colonne_blocchi - 2)
                     if angolo_superiore == True:
                         indice_colonna_blocco = indice_colonna_blocco + 1
@@ -218,11 +210,8 @@ class Gioco:
 
     def _calcola_velocita_alieni(self):
         numero_totale_alieni = NUMERO_COLONNE_ALIENI * NUMERO_RIGHE_ALIENI
-        numero_alieni_vivi = len(self.gruppo_alieni)
-        rapporto_alieni_rimasti = numero_alieni_vivi / numero_totale_alieni
-        velocita_corrente = VELOCITA_BASE_ALIENI + (1 - rapporto_alieni_rimasti) * 3.0
-        velocita_corrente = velocita_corrente * (1 + (self.numero_ondata - 1) * 0.15)
-        return velocita_corrente
+        rapporto_alieni_rimasti = len(self.gruppo_alieni) / numero_totale_alieni
+        return VELOCITA_BASE_ALIENI + (1 - rapporto_alieni_rimasti) * 3.0
 
     def _muovi_alieni(self):
         if len(self.gruppo_alieni) == 0:
@@ -254,12 +243,11 @@ class Gioco:
         if len(self.gruppo_alieni) == 0:
             return
         self.timer_sparo_alieni = self.timer_sparo_alieni + 1
-        frame_necessari_per_sparo = max(20, self.frame_tra_ogni_sparo_alieno - self.numero_ondata * 5)
-        if self.timer_sparo_alieni < frame_necessari_per_sparo:
+        if self.timer_sparo_alieni < self.frame_tra_ogni_sparo_alieno:
             return
         self.timer_sparo_alieni = 0
 
-        # Trova l'alieno più in basso per ogni colonna
+        # Trova l'alieno più in basso per ogni colonna e scegline uno a caso come sparatore
         alieno_piu_basso_per_colonna = {}
         for alieno in self.gruppo_alieni:
             colonna_non_presente = (alieno.indice_colonna in alieno_piu_basso_per_colonna) == False
@@ -281,10 +269,9 @@ class Gioco:
             self.gruppo_esplosioni.add(esplosione)
             self.gruppo_tutti_sprite.add(esplosione)
 
-        # Proiettile giocatore contro barriere: passa attraverso, distruggendo i blocchi colpiti
+        # Proiettile giocatore contro barriere: passa attraverso distruggendo i blocchi colpiti
         for proiettile in list(self.gruppo_proiettili_giocatore):
-            blocchi_colpiti = pygame.sprite.spritecollide(proiettile, self.gruppo_barriere, False)
-            for blocco_colpito in blocchi_colpiti:
+            for blocco_colpito in pygame.sprite.spritecollide(proiettile, self.gruppo_barriere, False):
                 blocco_colpito.subisce_colpo()
 
         # Proiettile alieno contro giocatore
@@ -316,31 +303,24 @@ class Gioco:
                 self.stato_gioco = "gameover"
                 return
         if len(self.gruppo_alieni) == 0:
-            self.numero_ondata = self.numero_ondata + 1
-            self._inizia_prossima_ondata()
-
-    def _inizia_prossima_ondata(self):
-        for sprite in list(self.gruppo_tutti_sprite):
-            if isinstance(sprite, (Proiettile, Alieno, BloccoBarriera, Esplosione)):
-                sprite.kill()
-        self.gruppo_barriere.empty()
-        self.gruppo_esplosioni.empty()
-        self.gruppo_proiettili_giocatore.empty()
-        self.gruppo_proiettili_alieni.empty()
-        self._genera_alieni()
-        self._genera_barriere()
-        self.timer_movimento_alieni = 0
-        self.timer_sparo_alieni = 0
+            self.stato_gioco = "vittoria"
 
     def _disegna_hud(self):
         testo_punteggio = self.carattere_piccolo.render(f"PUNTEGGIO: {self.giocatore.punteggio}", True, BIANCO)
         testo_vite = self.carattere_piccolo.render(f"VITE: {self.giocatore.vite}", True, VERDE)
-        testo_ondata = self.carattere_piccolo.render(f"ONDATA: {self.numero_ondata}", True, GIALLO)
         self.schermo.blit(testo_punteggio, [10, 10])
         self.schermo.blit(testo_vite, [LARGHEZZA_SCHERMO // 2 - 50, 10])
-        self.schermo.blit(testo_ondata, [LARGHEZZA_SCHERMO - 140, 10])
         pygame.draw.line(self.schermo, VERDE, [0, 35], [LARGHEZZA_SCHERMO, 35], 1)
         pygame.draw.line(self.schermo, VERDE, [0, ALTEZZA_SCHERMO - 10], [LARGHEZZA_SCHERMO, ALTEZZA_SCHERMO - 10], 1)
+
+    def _disegna_schermata_finale(self, titolo, colore_titolo):
+        self.schermo.fill(NERO)
+        testo_titolo = self.carattere_grande.render(titolo, True, colore_titolo)
+        testo_punteggio_finale = self.carattere_piccolo.render(f"Punteggio finale: {self.giocatore.punteggio}", True, BIANCO)
+        testo_istruzione_riavvio = self.carattere_piccolo.render("Premi INVIO per ricominciare", True, CIANO)
+        self.schermo.blit(testo_titolo, testo_titolo.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 - 60]))
+        self.schermo.blit(testo_punteggio_finale, testo_punteggio_finale.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2]))
+        self.schermo.blit(testo_istruzione_riavvio, testo_istruzione_riavvio.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 60]))
 
     def _disegna_schermata_menu(self):
         self.schermo.fill(NERO)
@@ -350,15 +330,6 @@ class Gioco:
         self.schermo.blit(testo_titolo, testo_titolo.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 - 60]))
         self.schermo.blit(testo_istruzione_avvio, testo_istruzione_avvio.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 20]))
         self.schermo.blit(testo_controlli, testo_controlli.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 60]))
-
-    def _disegna_schermata_gameover(self):
-        self.schermo.fill(NERO)
-        testo_gameover = self.carattere_grande.render("GAME OVER", True, ROSSO)
-        testo_punteggio_finale = self.carattere_piccolo.render(f"Punteggio finale: {self.giocatore.punteggio}", True, BIANCO)
-        testo_istruzione_riavvio = self.carattere_piccolo.render("Premi INVIO per ricominciare", True, CIANO)
-        self.schermo.blit(testo_gameover, testo_gameover.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 - 60]))
-        self.schermo.blit(testo_punteggio_finale, testo_punteggio_finale.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2]))
-        self.schermo.blit(testo_istruzione_riavvio, testo_istruzione_riavvio.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 60]))
 
     def avvia(self):
         while True:
@@ -374,27 +345,24 @@ class Gioco:
                     if self.stato_gioco == "menu" and evento.key == pygame.K_RETURN:
                         self.stato_gioco = "gioco"
 
-                    elif self.stato_gioco == "gameover" and evento.key == pygame.K_RETURN:
+                    elif self.stato_gioco in ["gameover", "vittoria"] and evento.key == pygame.K_RETURN:
                         self._inizializza_partita()
                         self.stato_gioco = "gioco"
 
-                    elif self.stato_gioco == "gioco":
-                        if evento.key == pygame.K_SPACE:
-                            nessun_proiettile_attivo = len(self.gruppo_proiettili_giocatore) == 0
-                            if self.giocatore.sta_morendo == False and nessun_proiettile_attivo == True:
-                                nuovo_proiettile = Proiettile(self.giocatore.rect.centerx, self.giocatore.rect.top, -VELOCITA_PROIETTILE_GIOCATORE, BIANCO)
-                                self.gruppo_proiettili_giocatore.add(nuovo_proiettile)
-                                self.gruppo_tutti_sprite.add(nuovo_proiettile)
+                    elif self.stato_gioco == "gioco" and evento.key == pygame.K_SPACE:
+                        nessun_proiettile_attivo = len(self.gruppo_proiettili_giocatore) == 0
+                        if self.giocatore.sta_morendo == False and nessun_proiettile_attivo == True:
+                            nuovo_proiettile = Proiettile(self.giocatore.rect.centerx, self.giocatore.rect.top, -VELOCITA_PROIETTILE_GIOCATORE, BIANCO)
+                            self.gruppo_proiettili_giocatore.add(nuovo_proiettile)
+                            self.gruppo_tutti_sprite.add(nuovo_proiettile)
 
             if self.stato_gioco == "gioco":
                 self.giocatore.aggiorna(tasti_premuti)
 
                 for proiettile in list(self.gruppo_proiettili_giocatore):
                     proiettile.aggiorna()
-
                 for proiettile in list(self.gruppo_proiettili_alieni):
                     proiettile.aggiorna()
-
                 for esplosione in list(self.gruppo_esplosioni):
                     esplosione.aggiorna()
 
@@ -407,10 +375,10 @@ class Gioco:
 
             if self.stato_gioco == "menu":
                 self._disegna_schermata_menu()
-
             elif self.stato_gioco == "gameover":
-                self._disegna_schermata_gameover()
-
+                self._disegna_schermata_finale("GAME OVER", ROSSO)
+            elif self.stato_gioco == "vittoria":
+                self._disegna_schermata_finale("HAI VINTO!", VERDE)
             elif self.stato_gioco == "gioco":
                 self.gruppo_tutti_sprite.draw(self.schermo)
                 self._disegna_hud()
