@@ -5,6 +5,8 @@ import os
 
 LARGHEZZA_SCHERMO = 800
 ALTEZZA_SCHERMO = 600
+META_LARGHEZZA_SCHERMO = LARGHEZZA_SCHERMO // 2
+META_ALTEZZA_SCHERMO = ALTEZZA_SCHERMO // 2
 FPS = 60
 
 NERO = [0, 0, 0]
@@ -58,7 +60,7 @@ class Giocatore(pygame.sprite.Sprite):
         super().__init__()
         self.image = carica_sprite("giocatore.png", larghezza=52, altezza=32)
         self.rect = self.image.get_rect()
-        self.rect.centerx = LARGHEZZA_SCHERMO // 2
+        self.rect.centerx = META_LARGHEZZA_SCHERMO
         self.rect.bottom = ALTEZZA_SCHERMO - 20
         self.vite = 3
         self.punteggio = 0
@@ -309,7 +311,7 @@ class Gioco:
         testo_punteggio = self.carattere_piccolo.render(f"PUNTEGGIO: {self.giocatore.punteggio}", True, BIANCO)
         testo_vite = self.carattere_piccolo.render(f"VITE: {self.giocatore.vite}", True, VERDE)
         self.schermo.blit(testo_punteggio, [10, 10])
-        self.schermo.blit(testo_vite, [LARGHEZZA_SCHERMO // 2 - 50, 10])
+        self.schermo.blit(testo_vite, [META_LARGHEZZA_SCHERMO - 50, 10])
         pygame.draw.line(self.schermo, VERDE, [0, 35], [LARGHEZZA_SCHERMO, 35], 1)
         pygame.draw.line(self.schermo, VERDE, [0, ALTEZZA_SCHERMO - 10], [LARGHEZZA_SCHERMO, ALTEZZA_SCHERMO - 10], 1)
 
@@ -318,18 +320,18 @@ class Gioco:
         testo_titolo = self.carattere_grande.render(titolo, True, colore_titolo)
         testo_punteggio_finale = self.carattere_piccolo.render(f"Punteggio finale: {self.giocatore.punteggio}", True, BIANCO)
         testo_istruzione_riavvio = self.carattere_piccolo.render("Premi INVIO per ricominciare", True, CIANO)
-        self.schermo.blit(testo_titolo, testo_titolo.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 - 60]))
-        self.schermo.blit(testo_punteggio_finale, testo_punteggio_finale.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2]))
-        self.schermo.blit(testo_istruzione_riavvio, testo_istruzione_riavvio.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 60]))
+        self.schermo.blit(testo_titolo, testo_titolo.get_rect(center=[META_LARGHEZZA_SCHERMO, META_ALTEZZA_SCHERMO - 60]))
+        self.schermo.blit(testo_punteggio_finale, testo_punteggio_finale.get_rect(center=[META_LARGHEZZA_SCHERMO, META_ALTEZZA_SCHERMO // 2]))
+        self.schermo.blit(testo_istruzione_riavvio, testo_istruzione_riavvio.get_rect(center=[META_LARGHEZZA_SCHERMO, META_ALTEZZA_SCHERMO // 2 + 60]))
 
     def _disegna_schermata_menu(self):
         self.schermo.fill(NERO)
         testo_titolo = self.carattere_grande.render("SPACE INVADERS", True, VERDE)
         testo_istruzione_avvio = self.carattere_piccolo.render("Premi INVIO per iniziare", True, BIANCO)
         testo_controlli = self.carattere_piccolo.render("← → per muoversi  |  SPAZIO per sparare", True, CIANO)
-        self.schermo.blit(testo_titolo, testo_titolo.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 - 60]))
-        self.schermo.blit(testo_istruzione_avvio, testo_istruzione_avvio.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 20]))
-        self.schermo.blit(testo_controlli, testo_controlli.get_rect(center=[LARGHEZZA_SCHERMO // 2, ALTEZZA_SCHERMO // 2 + 60]))
+        self.schermo.blit(testo_titolo, testo_titolo.get_rect(center=[META_LARGHEZZA_SCHERMO, META_ALTEZZA_SCHERMO // 2 - 60]))
+        self.schermo.blit(testo_istruzione_avvio, testo_istruzione_avvio.get_rect(center=[META_LARGHEZZA_SCHERMO, META_ALTEZZA_SCHERMO // 2 + 20]))
+        self.schermo.blit(testo_controlli, testo_controlli.get_rect(center=[META_LARGHEZZA_SCHERMO, META_ALTEZZA_SCHERMO // 2 + 60]))
 
     def avvia(self):
         while True:
